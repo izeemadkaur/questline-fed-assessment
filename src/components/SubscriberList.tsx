@@ -22,6 +22,21 @@ const SubscriberList: React.FC = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const pageIndexParam = searchParams.get("pageIndex");
+    const searchTermParam = searchParams.get("search");
+
+    if (pageIndexParam) {
+      setPageIndex(parseInt(pageIndexParam));
+    }
+    if (searchTermParam) {
+      setSearchTerm(searchTermParam);
+    }
+    setIsInitialLoad(false);
+  }, [setPageIndex, setSearchTerm]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,30 +62,14 @@ const SubscriberList: React.FC = () => {
     fetchData();
   }, [searchTerm, pageIndex, setTotalPages]);
 
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const pageIndexParam = searchParams.get("pageIndex");
-    const searchTermParam = searchParams.get("search");
-
-    if (pageIndexParam) {
-      setPageIndex(parseInt(pageIndexParam));
-    }
-    if (searchTermParam) {
-      setSearchTerm(searchTermParam);
-    }
-    setIsInitialLoad(false);
-  }, []);
-
   useEffect(() => {
     if (!isInitialLoad) {
       const newSearchParams = new URLSearchParams();
       if (searchTerm) {
         newSearchParams.set("search", searchTerm);
+        newSearchParams.set("pageIndex", pageIndex.toString());
+        window.history.pushState({}, "", `?${newSearchParams.toString()}`);
       }
-      newSearchParams.set("pageIndex", pageIndex.toString());
-      window.history.pushState({}, "", `?${newSearchParams.toString()}`);
     }
   }, [searchTerm, pageIndex, isInitialLoad]);
 
